@@ -2,28 +2,12 @@
   "objects": [
     {
       "myComment" : "Activity used to run the hive script to import CSV data",
-      "output": {
-        "ref": "DataNodeId_cnlSW"
-      },
-      "input": {
-        "ref": "DataNodeId_1ERqq"
-      },
       "name": "TableImportActivity",
       "hiveScript": "DROP TABLE IF EXISTS tempHiveTable;\n\nDROP TABLE IF EXISTS s3TempTable;\n\nCREATE EXTERNAL TABLE tempHiveTable (#{myDDBColDefn})\nSTORED BY 'org.apache.hadoop.hive.dynamodb.DynamoDBStorageHandler' \nTBLPROPERTIES (\"dynamodb.table.name\" = \"#{myDDBTableName}\", \"dynamodb.column.mapping\" = \"#{myDDBTableColMapping}\");\n                    \nCREATE EXTERNAL TABLE s3TempTable (#{myS3ColMapping})\nROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\\n' LOCATION '#{myInputS3Loc}';\n                    \nINSERT OVERWRITE TABLE tempHiveTable SELECT * FROM s3TempTable;",
       "id": "TableImportActivity",
-      "runsOn": { "ref" : "EmrClusterForRestore" },
+      "runsOn": { "ref" : "EmrClusterForImport" },
       "stage": "false",
       "type": "HiveActivity"
-    },
-    {
-      "myComment" : "The target Dynamo table",
-      "dataFormat": {
-        "ref": "DDBExportFormat"
-      },
-      "name": "DynamoDB",
-      "id": "DataNodeId_1ERqq",
-      "type": "DynamoDBDataNode",
-      "tableName": "#{myDDBTableName}"
     },
     {
       "failureAndRerunMode": "CASCADE",
@@ -35,38 +19,14 @@
       "id": "Default"
     },
     {
-      "name": "EmrClusterForRestore",
+      "name": "EmrClusterForImport",
       "coreInstanceType": "m1.medium",
       "coreInstanceCount": "1",
       "masterInstanceType": "m1.medium",
       "releaseLabel": "emr-4.4.0",
-      "id": "EmrClusterForRestore",
+      "id": "EmrClusterForImport",
       "type": "EmrCluster",
       "terminateAfter": "2 Hours"
-    },
-    {
-      "myComment" : "The S3 path from which we import data from",
-      "directoryPath": "#{myInputS3Loc}",
-      "dataFormat": {
-        "ref": "DataFormatId_xqWRk"
-      },
-      "name": "S3DataNode",
-      "id": "DataNodeId_cnlSW",
-      "type": "S3DataNode"
-    },
-    {
-      "myComment" : "Format for the S3 Path",
-      "name": "DefaultDataFormat1",
-      "column": "not_used STRING",
-      "id": "DataFormatId_xqWRk",
-      "type": "CSV"
-    },
-    {
-      "myComment" : "Format for the DynamoDB table",
-      "name": "DDBExportFormat",
-      "id": "DDBExportFormat",
-      "column": "not_used STRING",
-      "type": "DynamoDBExportDataFormat"
     }
   ],
   "parameters": [
