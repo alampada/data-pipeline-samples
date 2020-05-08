@@ -8,15 +8,15 @@
       "input": {
         "ref": "DataNodeId_1ERqq"
       },
-      "name": "TableRestoreActivity",
+      "name": "TableImportActivity",
       "hiveScript": "DROP TABLE IF EXISTS tempHiveTable;\n\nDROP TABLE IF EXISTS s3TempTable;\n\nCREATE EXTERNAL TABLE tempHiveTable (#{myDDBColDefn})\nSTORED BY 'org.apache.hadoop.hive.dynamodb.DynamoDBStorageHandler' \nTBLPROPERTIES (\"dynamodb.table.name\" = \"#{myDDBTableName}\", \"dynamodb.column.mapping\" = \"#{myDDBTableColMapping}\");\n                    \nCREATE EXTERNAL TABLE s3TempTable (#{myS3ColMapping})\nROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\\n' LOCATION '#{myInputS3Loc}';\n                    \nINSERT OVERWRITE TABLE tempHiveTable SELECT * FROM s3TempTable;",
-      "id": "TableRestoreActivity",
+      "id": "TableImportActivity",
       "runsOn": { "ref" : "EmrClusterForRestore" },
       "stage": "false",
       "type": "HiveActivity"
     },
     {
-      "myComment" : "The DynamoDB table from which we need to import data from",
+      "myComment" : "The target Dynamo table",
       "dataFormat": {
         "ref": "DDBExportFormat"
       },
